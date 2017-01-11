@@ -2,31 +2,33 @@
 
 switch (estado_hola) {
    case H:
-      if (tiempo_trascurrido >= 2000) {
+      if (tiempo_trascurrido >= 1000) {
          Serial.println('H');
          estado_hola = O;
          tiempo_transcurrido = 0;
       }
       break;
    case O:
-	if (tiempo_transcurrido >= 2000) {
+        if (tiempo_transcurrido >= 1000) {
 	   Serial.println('O');
 	   estado_hola = L;
 	   tiempo_transcurrido = 0;
 	}
 	break;
    case L:
-	if (tiempo_transcurrido >= 2000) {
+	if (tiempo_transcurrido >= 1000) {
    	   Serial.println('L');
 	   estado_hola = A;
 	   tiempo_transcurrido = 0;
 	}
+        break;
    case A: 
-	if (tiempo_transcurrido >= 2000) {
+	if (tiempo_transcurrido >= 1000) {
 	   Serial.println('A');
 	   estado_hola = H;
 	   tiempo_transcurrido = 0;
 	}
+        break;
 }
 
 //Control del parpadeo del LED
@@ -41,7 +43,7 @@ switch (estado_led) {
 	break;
 
    case ALTO:
-	if (tiempo_transcurrido_ed >= 166) {
+	if (tiempo_transcurrido_led >= 166) {
          digitalWrite(LED, LOW);
          estado_led = BAJO;
          tiempo_transcurrido_led = 0;

@@ -1,14 +1,25 @@
+#include "LowPower.h"
+
+#define PULSADOR 2
+#define LED 11
+
+void despierta(){
+}
+
 void setup() {
-    bitSet(ADCSRA, ADPS2);
-    bitClear(ADCSRA, ADPS1);
-    bitClear(ADCSRA, ADPS0);
+  Serial.begin(9600);
+  pinMode(PULSADOR, INPUT);
+  pinMode(LED, OUTPUT);
 }
 
 void loop() {
-	if (analogRead(A0) > 100){
-		digitalWrite(13, HIGH);
-	}
-	else{
-		digitalWrite(13, LOW);
-	}
+  attachInterrupt(0, despierta, CHANGE);
+  LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF);
+
+  detachInterrupt(0);
+  digitalWrite(LED, HIGH);
+  Serial.println("Hola");
+  delay(1000);
+  digitalWrite(LED, LOW);
+  Serial.flush();
 }

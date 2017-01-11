@@ -1,32 +1,27 @@
-#include <Metro.h>
+#include <TimerOne.h>
 
-#define PARPADEO_OK 	1000	// 1 segundo 
-#define PARPADEO_ERR 	50	// 50 ms
+#define PARPADEO_OK 	1000000
+#define PARPADEO_ERR 	50000
 #define LED 13
 
-boolean estado = LOW;
-Metro MetroEstado = Metro(PARPADEO_OK); // Creamos objeto tipo Metro
-
 void setup() {
-  pinMode(LED,OUTPUT);
-  digitalWrite(LED,estado);
+  pinMode(LED, OUTPUT);
+  Timer1.initialize(PARPADEO_OK);	// Inicializamos Temporizador 1 a 1s.
+  Timer1.attachInterrupt(parpadea);	// Función asociada al desbordamiento. 
   Serial.begin(9600);
 }
 
+void parpadea() {
+  digitalWrite(LED, !digitalRead(LED));
+}
+
 void loop() {
-  if (MetroEstado.check()) {
-    if (estado==HIGH){ 
-	estado=LOW;
+  if (Serial.available() > 0){
+    if (Serial.read()=='x') {
+      Timer1.setPeriod(PARPADEO_ERR);
     }
-    else { 
-	estado=HIGH;   
+    else {
+      Timer1.setPeriod(PARPADEO_OK);
     }
-    digitalWrite(LED,estado);
-  }
-    if (Serial.available()) {
-    if (Serial.read() == 'x')
-      MetroEstado.interval(PARPADEO_ERR);
-    else
-      MetroEstado.interval(PARPADEO_OK);
   }
 }

@@ -8,7 +8,7 @@ void setup() {
 }
 
 void loop() {
-  if(millis() - millisAnterior > INTERVALO) {
+  if(millis() - millisAnterior >= INTERVALO) {
     millisAnterior = millis();  
     digitalWrite(LED, !digitalRead(LED));
   }

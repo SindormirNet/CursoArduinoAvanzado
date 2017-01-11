@@ -1,29 +1,19 @@
-boolean valido = false;
+#include <avr/wdt.h>
 
 void setup() {
-    pinMode(LED_BUILTIN, OUTPUT);
-    Serial.begin(9600);
+  wdt_disable();        	//Importantísimo: Deshabilitamos el WDT lo primero
+  pinMode(11, OUTPUT);
+  digitalWrite(11, HIGH);
+  delay(5000);          	//Este delay nos permite reprogramar en cualquier caso
+  digitalWrite(11, LOW);
+  wdt_enable(WDTO_4S);	//Habilitamos el WDT configurado a 4 segundos
+
 }
 
 void loop() {
-    if (valido) digitalWrite(LED_BUILTIN, HIGH);
-}
 
-void serialEvent() {
-	static char comando[3] = "";
-	static unsigned char estado = 0;
-	switch (estado) {
-	case 0: //recibir primer carácter
-			comando[0] = Serial.read();
-			estado = 1;
-		break;
-	case 1: //recibir segundo carácter
-			comando[1] = Serial.read();
-			estado = 2;
-		//break;
-	case 2:
-		if ((comando[0] == 'o') && ((comando[1] == 'k'))) valido = true;
-		estado = 0;
-	}
-}
+  if (digitalRead(2)==HIGH){
+    wdt_reset();		//Si no ejecutamos esta orden, Arduino se reiniciará
+  }
 
+}
