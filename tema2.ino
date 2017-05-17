@@ -1,6 +1,6 @@
 void setup() {
   Serial.begin(9600);
-  DDRD = 0xFC;
+  DDRD = 0xFF;
 }
 
 void loop() {
