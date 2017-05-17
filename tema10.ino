@@ -1,4 +1,4 @@
-#include "LowPower.h"
+#include <LowPower.h>
 
 #define PULSADOR 2
 #define LED 11
@@ -18,8 +18,8 @@ void loop() {
 
   detachInterrupt(0);
   digitalWrite(LED, HIGH);
-  Serial.println("Hola");
   delay(1000);
   digitalWrite(LED, LOW);
+  Serial.println("Hola");
   Serial.flush();
 }
