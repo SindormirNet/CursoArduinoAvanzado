@@ -1,48 +1,43 @@
-#include <EEPROM.h>
-
-#define EEPROM_ADDRESS 1000
-#define TEMPERATURA_BASE 25.0
-
-float toffset = 0.0;
+#include <avr/sleep.h>
 
 void setup() {
-    float f = 0.0;
-    
     Serial.begin(9600);
-    EEPROM.get(EEPROM_ADDRESS, f);
-    if (isnan(f)) {
-        toffset = TEMPERATURA_BASE - get_temp();
-        EEPROM.put(EEPROM_ADDRESS, toffset);
-    }
-    else toffset = f;
 }
 
 void loop() {
-    Serial.print(F("Temperatura: "));
-    Serial.print(get_temp());
-    Serial.println(F(" C"));
-    delay(1000);
+    Serial.print(F("Valor analogico leido: "));
+    Serial.println(analogRead_reduccion_ruido(A0));
+    delay(500);
 }
 
-float get_temp(void) {
-    float t;
+int analogRead_reduccion_ruido(unsigned char pin) {
+    unsigned char oldTIMSK0 = 0;
 
-    // La lectura de temperatura ha de realizarse
-    // Con la referencia de 1,1V
-    ADMUX = (_BV(REFS1) | _BV(REFS0));
-    // Selecciona el canal del sensor de temperatura
-    ADMUX |= 0x08;
-    // Habilita el ADC
-    ADCSRA = _BV(ADEN);
-    // Prescaler a 128
-    ADCSRA |= (_BV(ADPS0) | _BV(ADPS1) | _BV(ADPS2));
-    // Espera un poco a que se estabilicen las tensiones
-    delay(20);
-    // Inicia la conversión
-    ADCSRA |= _BV(ADSC);
-    // Espera hasta que la conversión acabe
-    while (ADCSRA & _BV(ADSC));
-    // Calcula la temperatura en grados Celsius
-    t = (0.9424853 * (1.07421875 * (float)ADCW)) - 272.3887 + toffset;
-    return t;
+    if (pin >= 14) pin -= 14;	// Para el pin de entrada indicado
+    if (!(ADCSRA & _BV(ADSC))) { // Si no está el ADC en conversión
+        ADCSRA = _BV(ADEN);	// Habilita el ADC
+        ADCSRA |= (_BV(ADPS0) | _BV(ADPS1) | _BV(ADPS2));	// Prescaler a 128
+        ADCSRA |= _BV(ADIE); // Habilitar la interrupción al finalizar conversión 
+        ADMUX = (0x1 << 6) | (pin & 0x07);//Selecciona el canal 
+        set_sleep_mode(SLEEP_MODE_ADC); // Configura el modo de bajo consumo
+        oldTIMSK0 = TIMSK0;// Copia el estado de las interrupciones de timer0 antes de
+				// deshabilitarlas . Esto causará inexactitud en millis()
+        TIMSK0 = 0;		//Deshabilita interrupciones en timer0 mientras no se haya 					//completado la conversión
+        do {
+            sleep_enable(); 	// Habilita la capacidad de suspensión
+            sei();			//Habilitar interrupciones para poder despertar
+            // En el modo SLEEP_MODE_ADC la conversión inicia en cuanto la CPU suspende
+            sleep_cpu();		//Entrar en modo SLEEP.
+            // Si esta línea se ejecuta es que se ha despertado
+            sleep_disable();//Acabamos de despertar, así que deshabilitamos el sleep
+            cli();	        //La comprobación de conversión finalizada ha de hacerse 					 //con las interrupciones deshabilitadas
+        } while (ADCSRA & _BV(ADSC));
+        ADCSRA &= ~(_BV(ADIE));	// Deshabilita la interrupción por ADC
+        sei();// Habilita las interrupciones globales
+        TIMSK0 = oldTIMSK0;  // Restaura las interrupciones del timer0
+        return(ADCW);// Devuelve el resultado de la conversión
+    }
+    else return -1;
 }
+
+ISR(ADC_vect) {} //Esta función debe existir para que la interrupción se ejecute
