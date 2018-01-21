@@ -11,7 +11,7 @@ void setup() {
     Serial.begin(9600);
     EEPROM.get(EEPROM_ADDRESS, f);
     if (isnan(f)) {
-        toffset = TEMPERATURA_BASE - getTemp();
+        toffset = TEMPERATURA_BASE - get_temp();
         EEPROM.put(EEPROM_ADDRESS, toffset);
     }
     else toffset = f;
@@ -19,7 +19,7 @@ void setup() {
 
 void loop() {
     Serial.print(F("Temperatura: "));
-    Serial.print(getTemp());
+    Serial.print(get_temp());
     Serial.println(F(" C"));
     delay(1000);
 }
