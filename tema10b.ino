@@ -7,7 +7,6 @@ void setup() {
 }
 
 void loop() {
-    //Entra en modo de bajo consumo y a los 4 segundos es despertado por el WDT
     LowPower.powerDown(SLEEP_4S, ADC_OFF, BOD_OFF);  
 
     digitalWrite(LED, HIGH);
